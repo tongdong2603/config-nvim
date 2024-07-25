@@ -1,5 +1,5 @@
 
 
-require("josean.core")
-require("josean.lazy")
+require("aikon.core")
+require("aikon.lazy")
 -- require("utils")
