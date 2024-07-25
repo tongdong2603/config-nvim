@@ -73,8 +73,8 @@ return {
   },
 
   -- add telescope-fzf-native
-  {
-    "telescope.nvim",
+ {
+    "nvim-telescope/telescope.nvim",
     dependencies = {
       "nvim-telescope/telescope-fzf-native.nvim",
       build = function()
@@ -170,8 +170,8 @@ return {
     opts = function(_, opts)
       -- add tsx and treesitter
       vim.list_extend(opts.ensure_installed, {
-          "tsx",
-          "typescript",
+        "tsx",
+        "typescript",
       })
     end,
   },
