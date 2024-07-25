@@ -1,5 +1,5 @@
 vim.cmd("let g:netrw_liststyle = 3")
-
+vim.opt.winbar = "%=%m %f"
 local opt = vim.opt
 
 opt.relativenumber = true

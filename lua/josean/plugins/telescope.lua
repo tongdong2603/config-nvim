@@ -40,13 +40,6 @@ return {
           },
         },
       },
-      pickers = {
-        find_files = {
-          -- find_command = { "find", ".", "-type", "f", "-name" },
-          find_command = { "rg", "--files", "--hidden", "--glob" },
-        },
-      },
-
       extensions = {
         fzf = {
           fuzzy = true, -- Bật tìm kiếm mờ

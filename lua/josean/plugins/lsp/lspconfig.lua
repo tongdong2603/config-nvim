@@ -61,7 +61,10 @@ return {
 
         opts.desc = "Show documentation for what is under cursor"
         keymap.set("n", "D", vim.lsp.buf.hover, opts) -- show documentation for what is under cursor
-
+        opts.desc = "Code Action"
+        keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+        opts.desc = "Run Codelens"
+        keymap.set("n", "<leader>cc", vim.lsp.codelens.run, opts)
         opts.desc = "Restart LSP"
         keymap.set("n", "<leader>rs", ":LspRestart<CR>", opts) -- mapping to restart lsp if necessary
       end,
