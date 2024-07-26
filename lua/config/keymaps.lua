@@ -8,3 +8,5 @@ vim.keymap.set(
   require("telescope.builtin").resume,
   { noremap = true, silent = true, desc = "Resume" }
 )
+
+keymap.set("n", "<leader>cal", '<cmd>lua require("util.console-log").insert_console_log()<CR>', { desc = "log info", noremap = true, silent = true })
