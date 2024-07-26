@@ -10,13 +10,16 @@ if true then return {} end
 -- * override the configuration of LazyVim plugins
 return {
   -- add gruvbox
-  { "ellisonleao/gruvbox.nvim" },
-
+  -- { "ellisonleao/gruvbox.nvim" },
+  -- { "joshdick/onedark.vim" },
+  -- { "Mofiqul/dracula.nvim" },
+  -- monokai pro
+  { "loctvl842/monokai-pro.nvim" },
   -- Configure LazyVim to load gruvbox
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "gruvbox",
+      colorscheme = "monokai-pro",
     },
   },
 
@@ -73,12 +76,12 @@ return {
   },
 
   -- add telescope-fzf-native
- {
+  {
     "nvim-telescope/telescope.nvim",
     dependencies = {
       "nvim-telescope/telescope-fzf-native.nvim",
       build = function()
-        vim.fn.system({'make', 'CFLAGS=-Wno-nullability-completeness'})
+        vim.fn.system({ "make", "CFLAGS=-Wno-nullability-completeness" })
       end,
       config = function()
         require("telescope").load_extension("fzf")
