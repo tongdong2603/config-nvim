@@ -1,9 +1,11 @@
 return {
-  { "loctvl842/monokai-pro.nvim" },
+  { "loctvl842/monokai-pro.nvim", opts = {
+    filter = "machine",
+  } },
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "monokai",
+      colorscheme = "monokai-pro",
     },
   },
 }

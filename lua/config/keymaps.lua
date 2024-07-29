@@ -9,4 +9,15 @@ vim.keymap.set(
   { noremap = true, silent = true, desc = "Resume" }
 )
 
-keymap.set("n", "<leader>cal", '<cmd>lua require("util.console-log").insert_console_log()<CR>', { desc = "log info", noremap = true, silent = true })
+vim.keymap.set(
+  { "n", "v" },
+  "<leader>co",
+  '<cmd>lua require("util.console-log").insert_console_log()<CR>',
+  { desc = "log info", noremap = true, silent = true }
+)
+vim.keymap.set(
+  { "n", "v" },
+  "<leader>cj",
+  '<cmd>lua require("util.console-log").insert_console_log_json()<CR>',
+  { desc = "log JSON.stringify", noremap = true, silent = true }
+)
