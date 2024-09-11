@@ -1,35 +1,11 @@
 local M = {}
 
-function M.get_visual_selection()
-  local start_pos = vim.fn.getpos("'<")
-  local end_pos = vim.fn.getpos("'>")
-  local start_line = start_pos[2]
-  local start_col = start_pos[3]
-  local end_line = end_pos[2]
-  local end_col = end_pos[3]
-
-  if start_line == end_line then
-    local line = vim.fn.getline(start_line)
-    return line:sub(start_col, end_col)
-  else
-    local lines = vim.fn.getline(start_line, end_line)
-    lines[1] = lines[1]:sub(start_col)
-    lines[#lines] = lines[#lines]:sub(1, end_col)
-    return table.concat(lines, "\n")
-  end
-end
-
 function M.insert_console_log()
   -- Get the word under the cursor
   local word
-  local mode = vim.fn.visualmode()
+  local mode = vim.fn.mode()
 
-  if mode == "V" or mode == "v" then
-    word = M.get_visual_selection()
-  else
-    -- Get the word under the cursor
-    word = vim.fn.expand("<cword>")
-  end
+  word = vim.fn.expand("<cword>")
   -- Get the current line and cursor position
   local line = vim.api.nvim_get_current_line()
   local cursor = vim.api.nvim_win_get_cursor(0)
@@ -56,13 +32,8 @@ end
 function M.insert_console_log_json()
   -- Get the word under the cursor
   local word
-  local mode = vim.fn.visualmode()
-  if mode == "V" or mode == "v" then
-    word = M.get_visual_selection()
-  else
-    -- Get the word under the cursor
-    word = vim.fn.expand("<cword>")
-  end
+  -- Get the word under the cursor
+  word = vim.fn.expand("<cword>")
   -- Get the current line and cursor position
   local line = vim.api.nvim_get_current_line()
   local cursor = vim.api.nvim_win_get_cursor(0)

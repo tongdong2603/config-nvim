@@ -9,15 +9,25 @@ vim.keymap.set(
   { noremap = true, silent = true, desc = "Resume" }
 )
 
+vim.keymap.set("i", "jk", "<ESC>", { desc = "nomarl mode" })
+
 vim.keymap.set(
   { "n", "v" },
-  "<leader>co",
+  "<leader>cao",
   '<cmd>lua require("util.console-log").insert_console_log()<CR>',
   { desc = "log info", noremap = true, silent = true }
 )
 vim.keymap.set(
   { "n", "v" },
-  "<leader>cj",
+  "<leader>cai",
   '<cmd>lua require("util.console-log").insert_console_log_json()<CR>',
   { desc = "log JSON.stringify", noremap = true, silent = true }
 )
+
+vim.keymap.set("n", "j", "jzz")
+
+vim.keymap.set("n", "k", "kzz")
+
+vim.keymap.set("n", "0", "0w")
+
+vim.keymap.set("n", "J", "5jzz")
