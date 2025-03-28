@@ -8,8 +8,10 @@ return {
         javascriptreact = { "eslint_d" },
         typescriptreact = { "eslint_d" },
         svelte = { "eslint_d" },
-        proto = { "protolint" }
-      }
-    }
-  }
+        proto = { "protolint" },
+        lua = { "stylua" },
+        -- = {'nvim-lint'}
+      },
+    },
+  },
 }

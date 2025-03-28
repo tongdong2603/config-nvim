@@ -9,7 +9,7 @@ if true then return {} end
 -- * disable/enabled LazyVim plugins
 -- * override the configuration of LazyVim plugins
 return {
- 
+
   {
     "folke/trouble.nvim",
     -- opts will be merged with the parent spec
@@ -40,14 +40,26 @@ return {
   -- change some telescope options and a keymap to browse plugin files
   {
     "nvim-telescope/telescope.nvim",
+    dependencies = {
+      {
+        "nvim-telescope/telescope-fzf-native.nvim",
+        build = function()
+          vim.fn.system({ "make", "CFLAGS=-Wno-nullability-completeness" })
+        end,
+        config = function()
+          require("telescope").load_extension("fzf")
+        end,
+      },
+    },
     keys = {
       {
         "<leader>fp",
-        function() require("telescope.builtin").find_files({ cwd = require("lazy.core.config").options.root }) end,
+        function()
+          require("telescope.builtin").find_files({ cwd = require("lazy.core.config").options.root })
+        end,
         desc = "Find Plugin File",
       },
     },
-    -- change some options
     opts = {
       defaults = {
         layout_strategy = "horizontal",
@@ -58,64 +70,171 @@ return {
     },
   },
 
-  -- add telescope-fzf-native
-  {
-    "nvim-telescope/telescope.nvim",
-    dependencies = {
-      "nvim-telescope/telescope-fzf-native.nvim",
-      build = function()
-        vim.fn.system({ "make", "CFLAGS=-Wno-nullability-completeness" })
-      end,
-      config = function()
-        require("telescope").load_extension("fzf")
-      end,
-    },
-  },
-
   -- add pyright to lspconfig
-  {
-    "neovim/nvim-lspconfig",
-    ---@class PluginLspOpts
-    opts = {
-      ---@type lspconfig.options
-      servers = {
-        -- pyright will be automatically installed with mason and loaded with lspconfig
-        pyright = {},
-      },
-    },
-  },
-
-  -- add tsserver and setup with typescript.nvim instead of lspconfig
   {
     "neovim/nvim-lspconfig",
     dependencies = {
       "jose-elias-alvarez/typescript.nvim",
-      init = function()
-        require("lazyvim.util").on_attach(function(_, buffer)
-          -- stylua: ignore
-          vim.keymap.set( "n", "<leader>co", "TypescriptOrganizeImports", { buffer = buffer, desc = "Organize Imports" })
-          vim.keymap.set("n", "<leader>cR", "TypescriptRenameFile", { desc = "Rename File", buffer = buffer })
-        end)
-      end,
     },
-    ---@class PluginLspOpts
+    ---@class pluginlspopts
     opts = {
       ---@type lspconfig.options
       servers = {
-        -- tsserver will be automatically installed with mason and loaded with lspconfig
+        -- pyright sẽ được cài đặt tự động với mason và nạp với lspconfig
+        pyright = {},
+        gopls = {
+          settings = {
+            gopls = {
+              gofumpt = true,
+              codelenses = {
+                gc_details = false,
+                generate = true,
+                regenerate_cgo = true,
+                run_govulncheck = true,
+                test = true,
+                tidy = true,
+                upgrade_dependency = true,
+                vendor = true,
+              },
+              hints = {
+                assignvariabletypes = true,
+                compositeliteralfields = true,
+                compositeliteraltypes = true,
+                constantvalues = true,
+                functiontypeparameters = true,
+                parameternames = true,
+                rangevariabletypes = true,
+              },
+              analyses = {
+                nilness = true,
+                unusedparams = true,
+                unusedwrite = true,
+                useany = true,
+              },
+              useplaceholders = true,
+              completeunimported = true,
+              staticcheck = true,
+              directoryFilters = { "-.git", "-.vscode", "-.idea", "-.vscode-test", "-node_modules" },
+              semanticTokens = true,
+            },
+          },
+        },
         tsserver = {},
       },
-      -- you can do any additional lsp server setup here
-      -- return true if you don't want this server to be setup with lspconfig
-      ---@type table<string, fun(server:string, opts:_.lspconfig.options):boolean?>
+      -- setup
       setup = {
-        -- example to setup with typescript.nvim
+        -- gopls configuration
+        gopls = function(_, opts)
+          -- workaround cho gopls không hỗ trợ semanticTokensProvider
+          LazyVim.lsp.on_attach(function(client, _)
+            if not client.server_capabilities.semanticTokensProvider then
+              local semantic = client.config.capabilities.textDocument.semanticTokens
+              client.server_capabilities.semanticTokensProvider = {
+                full = true,
+                legend = {
+                  tokenTypes = semantic.tokenTypes,
+                  tokenModifiers = semantic.tokenModifiers,
+                },
+                range = true,
+              }
+            end
+          end, "gopls")
+        end,
+
+        -- typescript.nvim setup for tsserver
         tsserver = function(_, opts)
           require("typescript").setup({ server = opts })
           return true
         end,
-        -- Specify * to use this function as a fallback for any server
-        -- ["*"] = function(server, opts) end,
+
+        -- fallback for any server
+        ["*"] = function(server, opts)
+          -- You can add custom setup for other servers here if needed
+        end,
+      },
+    },
+  },
+  {
+    "mfussenegger/nvim-dap",
+    config = function()
+      -- Cấu hình cho Go
+      require("dap").configurations.go = {
+        {
+          type = "go",
+          name = "Debug Go",
+          request = "launch",
+          program = "${workspaceFolder}/cmd/app", -- Đảm bảo chỉ định đúng thư mục chứa main.go
+          dlvToolPath = vim.fn.exepath("dlv"),
+        },
+      }
+    end,
+  },
+  {
+    "leoluz/nvim-dap-go",
+    opts = {},
+    dependencies = {
+      {
+        "mfussenegger/nvim-dap",
+      },
+      {
+        "rcarriga/nvim-dap-ui",
+        config = function()
+          local dapui = require("dapui")
+          dapui.setup()
+
+          require("dap").listeners.after.event_initialized["dapui_config"] = function()
+            dapui.open()
+          end
+
+          require("dap").listeners.before.event_terminated["dapui_config"] = function()
+            dapui.close()
+          end
+
+          require("dap").listeners.before.event_exited["dapui_config"] = function()
+            dapui.close()
+          end
+        end,
+      },
+      { "nvim-neotest/nvim-nio" },
+    },
+  },
+
+  {
+    "echasnovski/mini.icons",
+    opts = {
+      file = {
+        [".go-version"] = { glyph = "", hl = "MiniIconsBlue" },
+      },
+      filetype = {
+        gotmpl = { glyph = "󰟓", hl = "MiniIconsGrey" },
+      },
+    },
+  },
+  {
+    "nvimtools/none-ls.nvim",
+    optional = true,
+    dependencies = {
+      {
+        "williamboman/mason.nvim",
+        opts = { ensure_installed = { "gomodifytags", "impl" } },
+      },
+    },
+    opts = function(_, opts)
+      local nls = require("null-ls")
+      opts.sources = vim.list_extend(opts.sources or {}, {
+        nls.builtins.code_actions.gomodifytags,
+        nls.builtins.code_actions.impl,
+        nls.builtins.formatting.goimports,
+        nls.builtins.formatting.gofumpt,
+      })
+    end,
+  },
+  {
+    "stevearc/conform.nvim",
+    optional = true,
+    opts = {
+      formatters_by_ft = {
+        go = { "goimports", "gofumpt" },
       },
     },
   },
@@ -128,8 +247,15 @@ return {
   -- add more treesitter parsers
   {
     "nvim-treesitter/nvim-treesitter",
-    opts = {
-      ensure_installed = {
+    opts = function(_, opts)
+      -- Kết hợp tất cả các ngôn ngữ cần cài đặt vào một danh sách duy nhất
+      vim.list_extend(opts.ensure_installed, {
+        "tsx",
+        "typescript",
+        "go",
+        "gomod",
+        "gowork",
+        "gosum",
         "bash",
         "help",
         "html",
@@ -141,26 +267,26 @@ return {
         "python",
         "query",
         "regex",
-        "tsx",
-        "typescript",
         "vim",
         "yaml",
-      },
-    },
-  },
-
-  -- since `vim.tbl_deep_extend`, can only merge tables and not lists, the code above
-  -- would overwrite `ensure_installed` with the new value.
-  -- If you'd rather extend the default config, use the code below instead:
-  {
-    "nvim-treesitter/nvim-treesitter",
-    opts = function(_, opts)
-      -- add tsx and treesitter
-      vim.list_extend(opts.ensure_installed, {
-        "tsx",
-        "typescript",
       })
     end,
+  },
+  {
+    "nvim-neotest/neotest",
+    optional = true,
+    dependencies = {
+      "fredrikaverpil/neotest-golang",
+    },
+    opts = {
+      adapters = {
+        ["neotest-golang"] = {
+          -- Here we can set options for neotest-golang, e.g.
+          -- go_test_args = { "-v", "-race", "-count=1", "-timeout=60s" },
+          dap_go_enabled = true, -- requires leoluz/nvim-dap-go
+        },
+      },
+    },
   },
 
   -- the opts function can also be used to change the default opts:
@@ -192,12 +318,7 @@ return {
 
   -- Use <tab> fmr completion and snippets (supertab)
   -- first: disable default <tab> and <s-tab> behavior in LuaSnip
-  {
-    "L3MON4D3/LuaSnip",
-    keys = function()
-      return {}
-    end,
-  },
+
   -- then: setup supertab in cmp
   {
     "hrsh7th/nvim-cmp",
